@@ -42,22 +42,63 @@ class Aqua():
     #Image Profiles
 
     def list_profiles(self):
+        """
+        Lists of all image runtime profiles in the system
+
+        :return: a list of all image runtime profiles in the system
+        """
         url = "{}/securityprofiles".format(self.url_prefix)
         response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return json.loads(response.content.decode('utf-8'))
 
     def end_profiling_session(self, registry_name: str, repository: str):
+        """
+        End a profiling session
+        There are two ways to end the profiling session: stopping the containers that were started in the previous stage,
+        or issuing an API call. Using the API call will cause the server to cease monitoring the containers' activity,
+        but the containers will continue to live, so only use it if you still need them.
+
+        :param registry_name:
+        :param repository:
+        :return: If the session is successfully terminated, an empty successful response is returned.
+        """
         url = "{}/profiler_sessions/{}/{}/stop_containers".format(self.url_prefix, registry_name, repository)
         response = requests.post(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response.content.decode('utf-8')
 
     def get_suggested_profile(self, registry_name: str, repository: str):
+        """
+        Get suggested profile generated in a profiling session
+
+        :param registry_name:
+        :param repository:
+        :return: the suggested image runtime profile in the standard image runtime profile structure.
+        """
         url = "{}/profiler_sessions/{}/{}/advice".format(self.url_prefix, registry_name, repository)
         response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return json.loads(response.content.decode('utf-8'))
 
     def create_profile(self, profile: str):
+        """
+        Create a new image runtime profile
+
+        :param profile: json object i.e. returned from get_suggested_profile
+        :return: A successful creation of the new profile will result in a 204 No Content response.
+        """
         url = "{}/securityprofiles".format(self.url_prefix)
         response = requests.post(url, data=profile, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response
+
+    def attach_profile(self, registry_name: str, repository: str, policy_name: str):
+        """
+        Attach an image runtime profile to a repository
+
+        :param registry_name:
+        :param repository:
+        :param policy_name:
+        :return:  Upon success, this route will return a 204 No Content response.
+        """
+        url = "{}/registry/{}/repos/{}/policy/{}".format(self.url_prefix, registry_name, repository, policy_name)
+        response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
 
