@@ -1,0 +1,11 @@
+.idea/
+.Python
+__pycache__/
+bin/
+include/
+lib/
+share/
+test.py
+aqua.egg-info/
+dist/
+venv
