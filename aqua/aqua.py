@@ -102,3 +102,26 @@ class Aqua():
         response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
 
+    def get_profile(self, profile_name: str):
+        """
+        Return the structure of an image runtime profile
+
+        :param profile_name: name of profile to retrieve
+        :return: the structure of an image runtime profile
+        """
+        url = "{}/securityprofiles/{}".format(self.url_prefix, profile_name)
+        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))
+
+    def modify_profile(self, profile_name: str, profile: str):
+        """
+        Update an existing image runtime profile
+
+        :param profile_name: name of profile to update
+        :param profile: json object i.e. returned from get_suggested_profile
+        :return: A successful creation of the new profile will result in a 204 No Content response.
+        """
+        url = "{}/securityprofiles/{}".format(self.url_prefix, profile_name)
+        response = requests.put(url, data=profile, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response
+
