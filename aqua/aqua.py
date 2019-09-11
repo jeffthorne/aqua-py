@@ -1,4 +1,5 @@
 from typing import Dict
+import urllib
 import json
 import requests
 
@@ -38,9 +39,14 @@ class Aqua():
         url = "{}/registries".format(self.url_prefix)
         response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return json.loads(response.content.decode('utf-8'))
-
+    """
+    def create_registry(self, type: str, name: str, description:str, username: str, password: str, url: str = None, prefixes):
+        url = "{}/registries".format(self.url_prefix)
+        data = json.dumps(dict(type=type, name=name, description=description, username=username, password=password, url=url))
+        response = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))
+    """
     #Image Profiles
-
     def list_profiles(self):
         """
         Lists of all image runtime profiles in the system
@@ -124,4 +130,38 @@ class Aqua():
         url = "{}/securityprofiles/{}".format(self.url_prefix, profile_name)
         response = requests.put(url, data=profile, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
+
+
+
+
+    #scanning images
+
+    def scan_status(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
+        url = "{}/scanner/registry/{}/image/{}:{}/status".format(self.url_prefix, registry_name, image_name, image_tag)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+    def scan_results(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
+        url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name, image_tag)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+
+    #secrets
+    def list_secrets(self):
+        url = "{}/secrets".format(self.url_prefix)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+    """
+    v2 calls
+    """
+    def register_image(self, registry, image_name, image_tag: str = 'latest'):
+        url = "{}/images".format(self.url_prefix.replace('v1', 'v2'))
+        data = json.dumps(dict(registry=registry, image=f'{image_name}:{image_tag}'))
+        response = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response
+
+
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest'):
+        url = "{}/images/{}/{}/{}/vulnerabilities".format(self.url_prefix.replace('v1', 'v2'), registry, image_name, image_tag)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
 

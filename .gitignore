@@ -10,3 +10,6 @@ aqua.egg-info/
 dist/
 venv
 test2.py
+add_gcr.py
+test3.py
+image_register_check.py
