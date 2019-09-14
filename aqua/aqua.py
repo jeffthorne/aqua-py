@@ -1,8 +1,8 @@
 from typing import Dict
-import urllib
+from urllib.parse import urlencode
 import json
 import requests
-
+import urllib3
 
 class Aqua():
 
@@ -11,6 +11,9 @@ class Aqua():
 
         self.api_version = api_version
         self.verify_tls = verify_tls
+        if self.verify_tls is False:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
         self.id = id
         self.proxy = proxy
         self.host = host
@@ -26,11 +29,15 @@ class Aqua():
         aqua_credentials = json.dumps(dict(id=self.id, password=password))
         response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         response_json = json.loads(response.content.decode('utf-8'))
-        self.token = response_json['token']
+
+        if 'token' in response_json:
+            self.token = response_json['token']
+        else:
+            raise Exception("Authentication Error")
         self.role = response_json['user']['role']
         self.is_super = response_json['user']['is_super']
         self.headers['Authorization'] = f"Bearer {self.token}"
-        return 'authentication successful'
+        return 'Authentication successful'
 
 
     # Registries
@@ -144,6 +151,9 @@ class Aqua():
         url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name, image_tag)
         return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
 
+    def scan_queue(self):
+        url = "{}/scanqueue/summary".format(self.url_prefix)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
 
     #secrets
     def list_secrets(self):
@@ -153,15 +163,34 @@ class Aqua():
     """
     v2 calls
     """
+
+    """
+    v2 Images
+    """
     def register_image(self, registry, image_name, image_tag: str = 'latest'):
         url = "{}/images".format(self.url_prefix.replace('v1', 'v2'))
         data = json.dumps(dict(registry=registry, image=f'{image_name}:{image_tag}'))
         response = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
 
-
-    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest'):
-        url = "{}/images/{}/{}/{}/vulnerabilities".format(self.url_prefix.replace('v1', 'v2'), registry, image_name, image_tag)
+    def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None,
+                               page_size: int = None, order_by: str = None):
+        query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
+        url = "{}/images?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
         return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
 
 
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', show_negligible: bool =True,
+                                   hide_base_image: bool = False):
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name,
+                                                             image_tag, query_string)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+    def list_image_malware(self, registry: str, repo: str, tag: str = "latest"):
+        url = "{}/images/{}/{}/{}/malware".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+    def list_image_sensitive_data(self, registry: str, repo: str, tag: str = "latest"):
+        url = "{}/images/{}/{}/{}/sensitive".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
