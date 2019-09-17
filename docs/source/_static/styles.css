@@ -1,0 +1,24 @@
+body{
+    margin-left: 0;
+    padding-left: 5;
+}
+
+.body{
+    margin-top: 20px;
+    padding-top: 10px;
+}
+.section{
+    width: 115%;
+}
+
+.highlight-python{
+    width: 85%;
+}
+
+.related {
+    display: none;
+}
+
+.footer {
+    display: none;
+}
