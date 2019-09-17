@@ -1,6 +1,6 @@
-name: py35
+name: py37
 dependencies:
-- python=3.6
+- python=3.7
 
 - pip:
   - requests>=2.9.1
