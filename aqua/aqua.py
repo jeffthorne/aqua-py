@@ -4,7 +4,7 @@ import json
 import requests
 import urllib3
 
-""""""
+"""-"""
 class Aqua():
 
     def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '8080', api_version: str = 'v1',\
