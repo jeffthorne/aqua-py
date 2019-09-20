@@ -1,5 +1,5 @@
-![alt tag|150x150](/docs/source/_static/aqua_logo.png?raw=true "aqua-py")
-
+![alt tag](/docs/source/_static/aqua_logo.png?raw=true "aqua-py")
+<img src="/docs/source/_static/aqua_logo.png" height="150" width="150>
 [![Downloads](https://pepy.tech/badge/aqua)](https://pepy.tech/project/aqua)
 
 aqua-py
