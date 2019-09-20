@@ -8,7 +8,7 @@
 Welcome to Aqua-py
 ===============
 
-A fantastic Python 3 client for Aqua's Container Security Platform.
+A fantastic Python 3 client for Aqua's Container Security Platform..
 
 
 Installation

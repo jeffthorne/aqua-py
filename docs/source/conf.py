@@ -6,7 +6,7 @@ import pypa_theme
 
 # -*- coding: utf-8 -*-
 #
-# aqua documentation build configuration file, created by
+# aqua-py documentation build configuration file, created by
 # sphinx-quickstart on Wed Nov  2 16:08:12 2016.
 #
 # This file is execfile()d with the current directory set to its

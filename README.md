@@ -1,3 +1,5 @@
+![alt tag](/docs/source/_static/aqua_logo.png?raw=true "aqua-py")
+
 [![Downloads](https://pepy.tech/badge/aqua)](https://pepy.tech/project/aqua)
 
 aqua-py
@@ -9,3 +11,5 @@ Current Status: Experimental
 ## Installation
 pip install aqua
 
+## Documentation
+http://aqua-py.readthedocs.io

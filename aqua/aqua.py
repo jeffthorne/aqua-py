@@ -9,6 +9,19 @@ class Aqua():
 
     def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '8080', api_version: str = 'v1',\
                  using_ssl = True, verify_tls: bool = False, cacert_file: str = None, proxy = None):
+        """
+        :param id: username
+        :param password: password
+        :param host: CSP console/API server IP address
+        :param port:  CSP console/API server port
+        :param api_version: optional. currently at v1
+        :param using_ssl: optional. used to hit https urls
+        :param verify_tls: optional. Whether to validate certificate. Set to false for self signed certs.
+        :param cacert_file: optional CA certificates to trust for certificate verification
+        :param proxy: optional http/https proxy dictionary
+
+        :return: an Aqua object that represents API endpoint and used for all subsequent calls.
+        """
 
         self.api_version = api_version
         self.verify_tls = verify_tls
