@@ -4,21 +4,23 @@ import json
 import requests
 import urllib3
 
-"""-"""
+
 class Aqua():
 
     def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '8080', api_version: str = 'v1',\
                  using_ssl = True, verify_tls: bool = False, cacert_file: str = None, proxy = None):
         """
-        :param id: username
-        :param password: password
-        :param host: CSP console/API server IP address
-        :param port:  CSP console/API server port
-        :param api_version: optional. currently at v1
-        :param using_ssl: optional. used to hit https urls
-        :param verify_tls: optional. Whether to validate certificate. Set to false for self signed certs.
-        :param cacert_file: optional CA certificates to trust for certificate verification
-        :param proxy: optional http/https proxy dictionary
+
+        Args:
+            id: username
+            password: password
+            host: CSP console/API server IP address
+            port:  CSP console/API server port
+            api_version: optional. currently at v1
+            using_ssl: optional. used to hit https urls
+            verify_tls: optional. Whether to validate certificate. Set to false for self signed certs.
+            cacert_file: optional CA certificates to trust for certificate verification
+            proxy: optional http/https proxy dictionary
 
         :return: an Aqua object that represents API endpoint and used for all subsequent calls.
         """
@@ -42,6 +44,7 @@ class Aqua():
         url = "{}/login".format(self.url_prefix)
         aqua_credentials = json.dumps(dict(id=self.id, password=password))
         response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        print(response.content)
         response_json = json.loads(response.content.decode('utf-8'))
 
         if 'token' in response_json:
@@ -157,9 +160,17 @@ class Aqua():
 
     #scanning images
 
-    def scan_status(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
+    def scan_status(self, registry_name: str, image_name: str, image_tag: str = 'latest') -> Dict:
+        """Get status of an image vulnerability scan.
+
+        :param registry_name: name of the registry
+        :param image_name: name of container image
+        :param image_tag: optional. image tag. defaults to latest
+        :return: scan status results as Dict
+        """
         url = "{}/scanner/registry/{}/image/{}:{}/status".format(self.url_prefix, registry_name, image_name, image_tag)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))
 
     def scan_results(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
         url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name, image_tag)
@@ -168,6 +179,18 @@ class Aqua():
     def scan_queue(self):
         url = "{}/scanqueue/summary".format(self.url_prefix)
         return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+
+    def start_image_scan(self, registry_name: str, image_name: str, image_tag: str = 'latest') -> Dict:
+        """Get status of an image vulnerability scan.
+
+        :param registry_name: name of the registry
+        :param image_name: name of container image
+        :param image_tag: optional. image tag. defaults to latest
+        :return: scan status as Dict
+        """
+        url = "{}/scanner/registry/{}/image/{}:{}/scan".format(self.url_prefix, registry_name, image_name, image_tag)
+        response = requests.post(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))
 
     #secrets
     def list_secrets(self):
