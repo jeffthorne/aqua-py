@@ -12,7 +12,7 @@ body{
 }
 
 .highlight-python{
-    width: 85%;
+    width: 100%;
 }
 
 .related {
@@ -22,3 +22,12 @@ body{
 .footer {
     display: none;
 }
+
+
+#rtd-search-form > input {border:none; background-color: white;}
+.docs-tutorials-resources{display: none;}
+footer{display: none; height: 0px;}
+#header-holder{display: none; height: 0px;margin-top: -100px;position: relative;}
+.header-container{display: none;margin-top: -100px;}
+.header-holder{display: none; height: 0px;margin-top: -100px;}
+

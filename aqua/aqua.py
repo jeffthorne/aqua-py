@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from urllib.parse import urlencode
 import json
 import requests
@@ -7,9 +7,11 @@ import urllib3
 
 class Aqua():
 
-    def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '8080', api_version: str = 'v1',\
-                 using_ssl = True, verify_tls: bool = False, cacert_file: str = None, proxy = None):
+    def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '443', api_version: str = 'v1',\
+                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None):
         """
+        Currently both v1 and v2 calls are abstracted in this client. You currently do not need to specify API version to
+        make v2 calls.
 
         Args:
             id: username
@@ -35,16 +37,13 @@ class Aqua():
         self.host = host
         self.port = port
         self.headers = {'Content-Type': 'application/json', 'api-version': self.api_version}
-        self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_ssl else '', self.host, self.port, self.api_version)
+        self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_tls else '', self.host, self.port, self.api_version)
         self._auth(password)
-
-
 
     def _auth(self, password):
         url = "{}/login".format(self.url_prefix)
         aqua_credentials = json.dumps(dict(id=self.id, password=password))
         response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        print(response.content)
         response_json = json.loads(response.content.decode('utf-8'))
 
         if 'token' in response_json:
@@ -129,8 +128,9 @@ class Aqua():
         :return:  Upon success, this route will return a 204 No Content response.
         """
         url = "{}/registry/{}/repos/{}/policy/{}".format(self.url_prefix, registry_name, repository, policy_name)
-        response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return response
+        #response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        #return response
+        return self.send_request(url, 'put')
 
     def get_profile(self, profile_name: str):
         """
@@ -140,8 +140,7 @@ class Aqua():
         :return: the structure of an image runtime profile
         """
         url = "{}/securityprofiles/{}".format(self.url_prefix, profile_name)
-        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return json.loads(response.content.decode('utf-8'))
+        return self.send_request(url)
 
     def modify_profile(self, profile_name: str, profile: str):
         """
@@ -157,6 +156,11 @@ class Aqua():
 
 
 
+    #image export and import
+    def export_images(self, images: List[str]):
+        url = "{}/images/export".format(self.url_prefix)
+        response = requests.post(url, data=json.dumps(dict(images=images)), verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response.json()
 
     #scanning images
 
@@ -169,16 +173,15 @@ class Aqua():
         :return: scan status results as Dict
         """
         url = "{}/scanner/registry/{}/image/{}:{}/status".format(self.url_prefix, registry_name, image_name, image_tag)
-        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return json.loads(response.content.decode('utf-8'))
+        return self.send_request(url)
 
     def scan_results(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
         url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name, image_tag)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return self.send_request(url)
 
     def scan_queue(self):
         url = "{}/scanqueue/summary".format(self.url_prefix)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return self.send_request(url)
 
     def start_image_scan(self, registry_name: str, image_name: str, image_tag: str = 'latest') -> Dict:
         """Get status of an image vulnerability scan.
@@ -189,13 +192,37 @@ class Aqua():
         :return: scan status as Dict
         """
         url = "{}/scanner/registry/{}/image/{}:{}/scan".format(self.url_prefix, registry_name, image_name, image_tag)
-        response = requests.post(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return json.loads(response.content.decode('utf-8'))
+        return self.send_request(url=url, method='post')
 
     #secrets
     def list_secrets(self):
         url = "{}/secrets".format(self.url_prefix)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return self.send_request(url)
+
+
+    """
+    Enforcer Host Management
+    """
+
+    def hosts(self):
+        url = "{}/hosts".format(self.url_prefix)
+        return self.send_request(url=url, method='get')
+
+    def send_request(self, url, method='get', data=None):
+        request_method = getattr(requests, method)
+
+        try:
+            response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+            if response.status_code == 200:
+                return json.loads(response.content.decode('utf-8'))
+            elif response.status_code == 204:
+                return json.loads('{}')
+            else:
+                return json.loads(response.content)
+
+        except Exception as e:
+            print(e)
+
 
     """
     v2 calls
@@ -207,27 +234,44 @@ class Aqua():
     def register_image(self, registry, image_name, image_tag: str = 'latest'):
         url = "{}/images".format(self.url_prefix.replace('v1', 'v2'))
         data = json.dumps(dict(registry=registry, image=f'{image_name}:{image_tag}'))
-        response = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return response
+        resp = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
 
-    def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None,
-                               page_size: int = None, order_by: str = None):
+    def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None, page_size: int = None, order_by: str = None):
         query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
         url = "{}/images?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
 
 
-    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', show_negligible: bool =True,
-                                   hide_base_image: bool = False):
+    def get_registered_images(self, registry: str = None, repository: str = None, name: str = None):
+        query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
+        url = "{}/images?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
+
+    def get_registered_image(self, registry: str, repo: str, tag: str = "latest"):
+        url = "{}/images/{}/{}/{}".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
+
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', show_negligible: bool = True, hide_base_image: bool = False):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
-        url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name,
-                                                             image_tag, query_string)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name, image_tag, query_string)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
 
     def list_image_malware(self, registry: str, repo: str, tag: str = "latest"):
         url = "{}/images/{}/{}/{}/malware".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
 
     def list_image_sensitive_data(self, registry: str, repo: str, tag: str = "latest"):
         url = "{}/images/{}/{}/{}/sensitive".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
-        return requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        resp =  requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()
+
+    def list_image_layers(self, registry: str, repo: str, tag: str = "latest"):
+        url = "{}/images/{}/{}/{}/history_layers".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return resp.json()

@@ -1,0 +1,7 @@
+username: username
+password: password
+aqua:
+  host: 192.0.2.8
+  port: 443
+  using_tls: True
+  verify_tls: False   #Only supports False right now
