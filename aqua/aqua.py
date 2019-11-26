@@ -255,8 +255,10 @@ class Aqua():
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
 
-    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', show_negligible: bool = True, hide_base_image: bool = False):
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0, pagesize: int = 50,
+                                   show_negligible: bool = True, hide_base_image: bool = False):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        print(query_string)
         url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name, image_tag, query_string)
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
