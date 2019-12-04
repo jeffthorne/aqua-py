@@ -201,6 +201,13 @@ class Aqua():
 
 
     """
+    Registries
+    """
+    def image_registry(self, name: str):
+        url = "{}/registries/{}".format(self.url_prefix, name)
+        return self.send_request(url)
+
+    """
     Enforcer Host Management
     """
 
