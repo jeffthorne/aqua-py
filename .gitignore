@@ -14,3 +14,4 @@ add_gcr.py
 test3.py
 image_register_check.py
 docs/build
+.vscode/
