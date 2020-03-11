@@ -199,6 +199,10 @@ class Aqua():
         url = "{}/secrets".format(self.url_prefix)
         return self.send_request(url)
 
+    def get_secret(self, secret_name: str):
+        url = "{}/secrets/{}".format(self.url_prefix, secret_name)
+        return self.send_request(url)
+
 
     """
     Registries
@@ -278,4 +282,13 @@ class Aqua():
 
     def list_image_layers(self, registry: str, repo: str, tag: str = "latest"):
         url = "{}/images/{}/{}/{}/history_layers".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        return self.send_request(url)
+
+    def notifications(self):
+        """
+        Get information of the last notification sent by the environment
+
+        :return: notifications as dict
+        """
+        url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
