@@ -55,20 +55,34 @@ class Aqua():
         self.headers['Authorization'] = f"Bearer {self.token}"
         return 'Authentication successful'
 
-
     # Registries
-
     def list_registries(self):
         url = "{}/registries".format(self.url_prefix)
         response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return json.loads(response.content.decode('utf-8'))
-    """
-    def create_registry(self, type: str, name: str, description:str, username: str, password: str, url: str = None, prefixes):
-        url = "{}/registries".format(self.url_prefix)
-        data = json.dumps(dict(type=type, name=name, description=description, username=username, password=password, url=url))
-        response = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return json.loads(response.content.decode('utf-8'))
-    """
+
+    def create_image_registry(self, reg_type: str, name: str, description: str, username: str, password: str, url: str = None, prefixes: str = None, auto_pull: bool = False):
+        """
+        Create a new image registry
+
+        :param reg_type: the type of the registry. i.e HUB (Docker Hub), AWS, GCR, ENGINE (direct connect to docker engine), V1/V2 (General Docker registries)
+        :param name: the name of the registry; string, required - this will be treated as the registry's ID, so choose a simple alphanumerical name without special signs and spaces
+        :param description:
+        :param username: the username for registry authentication; string, optional
+        :param password: the password for registry authentication; string, optional
+        :param url: the URL, address or region of the registry; string, optional
+        :param prefixes: See https://docs.aquasec.com/reference#section-image-registry-prefixes
+        :param auto_pull: whether to automatically pull images from the registry on creation and daily; boolean, defaults to false
+
+        :return: If successful, a 204 No Content response will be returned. Note that if auto_pull is enabled, the server
+                 will immediately begin pulling images from the registry.
+        """
+        api_url = "{}/registries".format(self.url_prefix)
+        data = json.dumps(dict(type=reg_type, name=name, description=description, username=username, password=password, url=url, prefixes=prefixes, auto_pull=auto_pull))
+        return self.send_request(api_url, method='post', data=data)
+
+
+
     #Image Profiles
     def list_profiles(self):
         """
