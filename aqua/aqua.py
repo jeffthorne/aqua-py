@@ -55,6 +55,43 @@ class Aqua():
         self.headers['Authorization'] = f"Bearer {self.token}"
         return 'Authentication successful'
 
+    # Consoles
+    def consoles(self):
+        """
+        Retrieve the configured consoles information
+
+        :return: Produces a JSON array of all consoles configured in the system
+        """
+        url = "{}/consoles".format(self.url_prefix)
+        return self.send_request(url)
+
+    def servers(self):
+        url = "{}/servers".format(self.url_prefix)
+        return self.send_request(url)
+
+
+    # Infrastructure
+    def list_assets(self, page: str = 1, page_size: str = 50, type: str = None):
+        """
+        Retrieve details of hosts and clusters configured in system.
+
+        :param page: list from provided page of results
+        :param page_size: list at most the provided number
+        :param type: node or cluster
+        :return: list of nodes and clusters
+        """
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})  # build query string from parameters that are not None
+        print(query_string)
+        url = "{}/infrastructure?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
+        print(url)
+        return self.send_request(url)
+
+    # Inventory
+    def inventory_scopes(self):
+        url = "{}/inventory/scopes".format(self.url_prefix.replace('v1', 'v2'))
+        return self.send_request(url)
+
+
     # Registries
     def list_registries(self):
         url = "{}/registries".format(self.url_prefix)
@@ -239,7 +276,36 @@ class Aqua():
     def hosts(self):
         url = "{}/hosts".format(self.url_prefix)
         return self.send_request(url=url, method='get')
+    
 
+    def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token, enforcer_image, enforce, gateways, orchestrator):
+        """Create a kubernetes enforcer group.
+
+        :param type: which enforcer (agent, micro-enforcer, nano-enforcer, vm-enforcer)
+        :param id: name of the enforcer group
+        :param logicalname: prefix for the enforcer names
+        :param host_os: Linux or Windows
+        :param service_account: Kubernetes service account 
+        :param namespace: Namespace Aqua deployed too
+        :param runtime: docker, crio, containerd
+        :param token: Installation token to identify group
+        :param enforcer_image: image to pull and deploy
+        :param enforce: bool - audit = False, enforce = True
+        :param gateways: string array of gateways
+        :param orchestrator: type of orchestrator (docker, kubernetes, openshift, pas)
+        :return: A successful creation of the new enforcer group will result in a json response with the profile
+        """
+        url = "{}/hostsbatch".format(self.url_prefix)
+        print(logicalname)
+        data = json.dumps(dict(id=id, hostname=logicalname, logicalname=logicalname, host_os=host_os, service_account=service_account, namespace=namespace, runtime_type=runtime, \
+            token=token, enforcer_image=enforcer_image, enforce=enforce, gateways=gateways, orchestrator={"type": orchestrator, "service_account": service_account, \
+            "namespace": namespace, "project": namespace}))
+        return self.send_request(url, method='post', data=data)
+
+
+    """
+    Send the API request
+    """
     def send_request(self, url, method='get', data=None):
         request_method = getattr(requests, method)
 
