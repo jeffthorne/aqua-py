@@ -240,7 +240,7 @@ class Aqua():
             response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
             if response.status_code == 200:
                 return json.loads(response.content.decode('utf-8'))
-            elif response.status_code == 204:
+            elif response.status_code == 204 or response.status_code == 201:
                 return json.loads('{}')
             else:
                 return json.loads(response.content)
@@ -259,8 +259,8 @@ class Aqua():
     def register_image(self, registry, image_name, image_tag: str = 'latest'):
         url = "{}/images".format(self.url_prefix.replace('v1', 'v2'))
         data = json.dumps(dict(registry=registry, image=f'{image_name}:{image_tag}'))
-        resp = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return resp.json()
+        #resp = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return self.send_request(url=url, method='post', data=data)
 
     def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None, page_size: int = None, order_by: str = None):
         query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
