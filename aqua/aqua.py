@@ -58,8 +58,7 @@ class Aqua():
     # Registries
     def list_registries(self):
         url = "{}/registries".format(self.url_prefix)
-        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        return json.loads(response.content.decode('utf-8'))
+        return self.send_request(url)
 
     def create_image_registry(self, reg_type: str, name: str, description: str, username: str, password: str, url: str = None, prefixes: str = None, auto_pull: bool = False):
         """
@@ -80,6 +79,20 @@ class Aqua():
         api_url = "{}/registries".format(self.url_prefix)
         data = json.dumps(dict(type=reg_type, name=name, description=description, username=username, password=password, url=url, prefixes=prefixes, auto_pull=auto_pull))
         return self.send_request(api_url, method='post', data=data)
+
+    def image_registry(self, name: str):
+        url = "{}/registries/{}".format(self.url_prefix, name)
+        return self.send_request(url)
+
+    def delete_registry(self, name: str):
+        """
+        Remove an existing image registry
+
+        :param name: registry friendly name within Aqua
+        :return: Upon successful removal, a 204 No Content response will be returned
+        """
+        url = "{}/registries/{}".format(self.url_prefix, name)
+        return self.send_request(url, method='delete')
 
 
 
@@ -218,12 +231,6 @@ class Aqua():
         return self.send_request(url)
 
 
-    """
-    Registries
-    """
-    def image_registry(self, name: str):
-        url = "{}/registries/{}".format(self.url_prefix, name)
-        return self.send_request(url)
 
     """
     Enforcer Host Management
