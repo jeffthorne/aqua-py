@@ -52,6 +52,7 @@ Use Cases
 Examples of customer use cases in the field.
 
 1. Image profiling build task: `Github <https://github.com/jeffthorne/aqua_examples>`_
+2. Create Enforcer Group: `github <https://github.com/jeffthorne/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
 
 
 

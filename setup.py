@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='aqua',
-      version='0.1.12',
+      version='0.1.14',
       description='Python 3 client for Aqua\'s CSP Platform',
       url='https://github.com/jeffthorne/aqua-py',
       author='Jeff Thorne',
