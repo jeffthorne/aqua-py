@@ -81,9 +81,17 @@ class Aqua():
         :return: list of nodes and clusters
         """
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})  # build query string from parameters that are not None
-        print(query_string)
         url = "{}/infrastructure?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
-        print(url)
+        return self.send_request(url)
+
+    def get_asset_details_by_id(self, id: str = 1):
+        """
+        Retrieve details of identified host or cluster in system by id.
+
+        :param id: host or cluster id
+        :return: details of asset
+        """
+        url = "{}/infrastructure/{}".format(self.url_prefix.replace('v1', 'v2'), id)
         return self.send_request(url)
 
     # Inventory
