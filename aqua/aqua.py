@@ -286,8 +286,8 @@ class Aqua():
         return self.send_request(url=url, method='get')
     
 
-    def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token, enforcer_image, enforce, gateways, orchestrator):
-        """Create a kubernetes enforcer group.
+    def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token, enforcer_image, enforce, gateways, orchestrator, runtime_options):
+        """Create an enforcer group.
 
         :param type: which enforcer (agent, micro-enforcer, nano-enforcer, vm-enforcer)
         :param id: name of the enforcer group
@@ -301,13 +301,16 @@ class Aqua():
         :param enforce: bool - audit = False, enforce = True
         :param gateways: string array of gateways
         :param orchestrator: type of orchestrator (docker, kubernetes, openshift, pas)
+        :param runtime_options: map of policy options 
         :return: A successful creation of the new enforcer group will result in a json response with the profile
         """
         url = "{}/hostsbatch".format(self.url_prefix)
-        print(logicalname)
         data = json.dumps(dict(id=id, hostname=logicalname, logicalname=logicalname, host_os=host_os, service_account=service_account, namespace=namespace, runtime_type=runtime, \
             token=token, enforcer_image=enforcer_image, enforce=enforce, gateways=gateways, orchestrator={"type": orchestrator, "service_account": service_account, \
-            "namespace": namespace, "project": namespace}))
+            "namespace": namespace, "project": namespace}, audit_failed_login=runtime_options["audit_failed_login"], audit_success_login=runtime_options["audit_success_login"], \
+            container_activity_protection=runtime_options["container_activity_protection"], network_protection=runtime_options["network_protection"], sync_host_images=runtime_options["sync_host_images"], \
+            syscall_enabled=runtime_options["syscall_enabled"], user_access_control=runtime_options["user_access_control"], risk_explorer_auto_discovery=runtime_options["risk_explorer_auto_discovery"], \
+            host_protection=runtime_options["host_protection"], host_network_protection=runtime_options["host_network_protection"], image_assurance=runtime_options["image_assurance"]))
         return self.send_request(url, method='post', data=data)
 
 
