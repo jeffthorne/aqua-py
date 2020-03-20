@@ -275,13 +275,17 @@ class Aqua():
         url = "{}/secrets/{}".format(self.url_prefix, secret_name)
         return self.send_request(url)
 
-
-
     """
     Enforcer Host Management
     """
 
     def hosts(self):
+        """
+        Get list of all Enforcers (hosts) on the Aqua Server
+
+        :return: The response format will be a JSON array of enforcer structures. See enforcer structure for description.
+                 https://docs.aquasec.com/reference#section-enforcer-structure
+        """
         url = "{}/hosts".format(self.url_prefix)
         return self.send_request(url=url, method='get')
     
@@ -313,6 +317,15 @@ class Aqua():
             host_protection=runtime_options["host_protection"], host_network_protection=runtime_options["host_network_protection"], image_assurance=runtime_options["image_assurance"]))
         return self.send_request(url, method='post', data=data)
 
+    def enforcer_details(self, id: str):
+        """
+         Get Enforcer details
+
+        :param id: host/enforcer id
+        :return:  The return structure is described in Enforcer Structure. https://docs.aquasec.com/reference#section-enforcer-structure
+        """
+        url = "{}/hosts/{}".format(self.url_prefix, id)
+        return self.send_request(url)
 
     """
     Send the API request
