@@ -266,7 +266,9 @@ class Aqua():
         url = "{}/scanner/registry/{}/image/{}:{}/scan".format(self.url_prefix, registry_name, image_name, image_tag)
         return self.send_request(url=url, method='post')
 
-    #secrets
+    """
+    Secrets
+    """
     def list_secrets(self):
         url = "{}/secrets".format(self.url_prefix)
         return self.send_request(url)
@@ -274,6 +276,47 @@ class Aqua():
     def get_secret(self, secret_name: str):
         url = "{}/secrets/{}".format(self.url_prefix, secret_name)
         return self.send_request(url)
+
+    """
+    Secret Key Stores
+    """
+    def list_secret_keystores(self):
+        """
+        List all existing secret key stores
+
+        :return: If successful, a 200 OK response status returned.
+                 A JSON list of all existing secret key stores will be returned
+        """
+        url = "{}/settings/keystores".format(self.url_prefix)
+        return self.send_request(url)
+
+    def create_secret_keystore(self, name: str, url: str, token: str, user: str, type: str = 'vault', enabled: bool = True):
+        """
+        This method expects the request structure described at https://docs.aquasec.com/reference#section-secret-key-store-structure
+
+        :param name: reference name of the secret key store to create; string, required
+        :param url: for vault type this is the URL of the vault service, for KMS this is the access ID; string; required only for vault type
+        :param token: the vault token, and for KMS, this is the secret key; string, required only for vault type
+        :param user: for vault this is the secret back-end, for KMS this is the region; string, required
+        :param type: the type of the secret key store; string, required [vault, kms]
+        :param enabled: true when the secret key store is enabled; boolean
+
+        :return: If successful, a {} will be returned
+        """
+        params = [(k, v) for (k, v) in locals().items() if v is not None and k is not 'self']
+        data = json.dumps(dict(params))
+        url = f"{self.url_prefix}/settings/keystores"
+        return self.send_request(url, data=data, method='post')
+
+    def delete_secret_keystore(self, name: str):
+        """
+        Deletes a secret key store
+
+        :param name: the reference name of the secret key store.
+        :return: If successful, a {}  will be returned.
+        """
+        url = f"{self.url_prefix}/settings/keystores/{name}"
+        return self.send_request(url, method='delete')
 
     """
     Enforcer Host Management
@@ -336,7 +379,13 @@ class Aqua():
         try:
             response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
             if response.status_code == 200:
-                return json.loads(response.content.decode('utf-8'))
+                content = response.content.decode('utf-8')
+                if content != '':
+                    content = json.loads(content)
+                else:
+                    content = json.loads('{}')
+
+                return content
             elif response.status_code == 204 or response.status_code == 201:
                 return json.loads('{}')
             else:
@@ -403,3 +452,4 @@ class Aqua():
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
+
