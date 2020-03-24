@@ -6,10 +6,11 @@
 
 
 Welcome to Aqua-py
-===============
+==================
 
-A fantastic Python 3 client for Aqua's Container Security Platform..
+A fantastic Python 3 client for Aqua's Container Security Platform.
 
+|
 
 Installation
 ------------
@@ -37,22 +38,26 @@ Start by creating an Aqua object. This object represents the Aqua CSP API endpoi
 
    aqua = Aqua(id='administrator', password='password', host='mylo.uw.edu')
 
-
+|
+|Note: At this time there is no need to specify API version. The SDK does this on your behalf.
+|
 
 Example Usage
 --------------
 Please refer to the Endpoint api doc at :doc:`aqua.aqua` for current sdk api endpoint capabilities.
 
-
+1. Authentication: `github <https://github.com/aquasecurity/aqua-py/blob/master/examples/authentication.py/>`_.
+2. Image Assurance: `github <https://github.com/aquasecurity/aqua-py/blob/master/examples/image_assurance.py/>`_.
 
 
 Use Cases
 ---------
 
-Examples of customer use cases in the field.
+Examples of use cases in the field.
 
 1. Image profiling build task: `Github <https://github.com/jeffthorne/aqua_examples>`_
 2. Create Enforcer Group: `github <https://github.com/aquasecurity/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
 3. k8s Admission controller: `Github <https://github.com/jeffthorne/rancher-admission-webhook>`_
+4. Custom Excel Report: `Github https://github.com/jeffthorne/aqua-reports>`_
 
 
