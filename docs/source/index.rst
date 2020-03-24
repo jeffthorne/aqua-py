@@ -38,9 +38,8 @@ Start by creating an Aqua object. This object represents the Aqua CSP API endpoi
 
    aqua = Aqua(id='administrator', password='password', host='mylo.uw.edu')
 
-|
 |Note: At this time there is no need to specify API version. The SDK does this on your behalf.
-|
+
 
 Example Usage
 --------------
@@ -58,6 +57,6 @@ Examples of use cases in the field.
 1. Image profiling build task: `Github <https://github.com/jeffthorne/aqua_examples>`_
 2. Create Enforcer Group: `github <https://github.com/aquasecurity/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
 3. k8s Admission controller: `Github <https://github.com/jeffthorne/rancher-admission-webhook>`_
-4. Custom Excel Report: `Github https://github.com/jeffthorne/aqua-reports>`_
+4. Custom Excel Report: `Github <https://github.com/jeffthorne/aqua-reports>`_
 
 
