@@ -267,6 +267,18 @@ class Aqua():
         return self.send_request(url=url, method='post')
 
     """
+    Services
+    """
+    def list_services(self):
+        """
+        Returns a list of all Aqua services in the system
+
+        :return: Return structure is a JSON array of service objects
+        """
+        url = f"{self.url_prefix}/applications"
+        return self.send_request(url=url)
+
+    """
     Secrets
     """
     def list_secrets(self):

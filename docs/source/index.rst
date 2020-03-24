@@ -19,7 +19,7 @@ Installation
    pip install aqua
 
 | This project is an early stage effort and has a status of experimental. Questions, Comments, Feedback, Missing Calls, etc.
-| Drop me a line @ jthorne@u.washington.edu
+| Drop me a line @ jeff.thorne@aquasec.com
 
 
 |
@@ -52,7 +52,7 @@ Use Cases
 Examples of customer use cases in the field.
 
 1. Image profiling build task: `Github <https://github.com/jeffthorne/aqua_examples>`_
-2. Create Enforcer Group: `github <https://github.com/jeffthorne/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
-
+2. Create Enforcer Group: `github <https://github.com/aquasecurity/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
+3. k8s Admission controller: `Github <https://github.com/jeffthorne/rancher-admission-webhook>`_
 
 
