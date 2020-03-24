@@ -35,7 +35,7 @@ Start by creating an Aqua object. This object represents the Aqua CSP API endpoi
 
    from aqua import Aqua
 
-   aqua = Aqua(id='username', password='password', host='host', port='port', using_ssl=True)
+   aqua = Aqua(id='administrator', password='password', host='mylo.uw.edu')
 
 
 
