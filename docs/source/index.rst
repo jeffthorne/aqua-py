@@ -10,7 +10,9 @@ Welcome to Aqua-py
 
 A fantastic Python 3 client for Aqua's Container Security Platform.
 
-|
+| This project is an early stage effort and has a status of experimental.
+| Questions, Comments, Feedback, Missing Calls, etc. Drop me a line @ jeff.thorne@aquasec.com
+
 
 Installation
 ------------
@@ -18,11 +20,6 @@ Installation
 .. code-block:: python
 
    pip install aqua
-
-|
-| This project is an early stage effort and has a status of experimental. Questions, Comments, Feedback, Missing Calls, etc.
-| Drop me a line @ jeff.thorne@aquasec.com
-
 
 |
 | Note: Requires Python 3.6 or higher due to reliance on Python's typing module and f strings.
