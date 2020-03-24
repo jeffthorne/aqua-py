@@ -41,6 +41,7 @@ Start by creating an Aqua object. This object represents the Aqua CSP API endpoi
 
 | Note: At this time there is no need to specify API version. The SDK does this on your behalf.
 |
+|
 
 Example Usage
 --------------
