@@ -369,7 +369,16 @@ class Aqua():
                  https://docs.aquasec.com/reference#section-enforcer-structure
         """
         url = "{}/hosts".format(self.url_prefix)
-        return self.send_request(url=url, method='get')    
+        return self.send_request(url=url, method='get')
+
+    """
+    Containers
+    """
+    def containers(self, node_id: str, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50' ):
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
+        url = f"{self.url_prefix}/containers?{query_string}"
+        return self.send_request(url=url, method='get')
+
 
     def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token, enforcer_image, enforce, gateways, orchestrator, runtime_options):
         """Create an enforcer group.
@@ -407,15 +416,6 @@ class Aqua():
         """
         url = "{}/hosts/{}".format(self.url_prefix, id)
         return self.send_request(url)
-
-    #containers
-    """
-    Containers
-    """
-    def containers(self, node_id: str, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50'):
-        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
-        url = f"{self.url_prefix}/containers?{query_string}"
-        return self.send_request(url=url, method='get')
 
     #dashboard
     """
@@ -479,6 +479,19 @@ class Aqua():
 
     def list_image_layers(self, registry: str, repo: str, tag: str = "latest"):
         url = "{}/images/{}/{}/{}/history_layers".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
+        return self.send_request(url)
+
+    def scan_history(self, registry: str, repo: str, tag: str = 'latest', order_by: str = '-date'):
+        """
+        Retrieve scan history for a container image
+
+        :param registry: name of the registry
+        :param repo: name of the repo
+        :param tag: image tag
+        :param order_by: date (ASC) or -date (DESC)
+        :return: scan history object
+        """
+        url = "{}/images/{}/{}/{}/scan_history?order_by={}".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag, order_by)
         return self.send_request(url)
 
     def notifications(self):
