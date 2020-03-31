@@ -266,7 +266,21 @@ class Aqua():
         url = "{}/scanner/registry/{}/image/{}:{}/scan".format(self.url_prefix, registry_name, image_name, image_tag)
         return self.send_request(url=url, method='post')
 
-    #secrets
+    """
+    Services
+    """
+    def list_services(self):
+        """
+        Returns a list of all Aqua services in the system
+
+        :return: Return structure is a JSON array of service objects
+        """
+        url = f"{self.url_prefix}/applications"
+        return self.send_request(url=url)
+
+    """
+    Secrets
+    """
     def list_secrets(self):
         url = "{}/secrets".format(self.url_prefix)
         return self.send_request(url)
@@ -275,14 +289,67 @@ class Aqua():
         url = "{}/secrets/{}".format(self.url_prefix, secret_name)
         return self.send_request(url)
 
+    """
+    Secret Key Stores
+    """
+    def list_secret_keystores(self):
+        """
+        List all existing secret key stores
 
+        :return: If successful, a 200 OK response status returned.
+                 A JSON list of all existing secret key stores will be returned
+        """
+        url = "{}/settings/keystores".format(self.url_prefix)
+        return self.send_request(url)
+
+    def create_secret_keystore(self, name: str, url: str, token: str, user: str, type: str = 'vault', enabled: bool = True):
+        """
+        This method expects the request structure described at https://docs.aquasec.com/reference#section-secret-key-store-structure
+
+        :param name: reference name of the secret key store to create; string, required
+        :param url: for vault type this is the URL of the vault service, for KMS this is the access ID; string; required only for vault type
+        :param token: the vault token, and for KMS, this is the secret key; string, required only for vault type
+        :param user: for vault this is the secret back-end, for KMS this is the region; string, required
+        :param type: the type of the secret key store; string, required [vault, kms]
+        :param enabled: true when the secret key store is enabled; boolean
+
+        :return: If successful, a {} will be returned
+        """
+        params = [(k, v) for (k, v) in locals().items() if v is not None and k is not 'self']
+        data = json.dumps(dict(params))
+        url = f"{self.url_prefix}/settings/keystores"
+        return self.send_request(url, data=data, method='post')
+
+    def delete_secret_keystore(self, name: str):
+        """
+        Deletes a secret key store
+
+        :param name: the reference name of the secret key store.
+        :return: If successful, a {}  will be returned.
+        """
+        url = f"{self.url_prefix}/settings/keystores/{name}"
+        return self.send_request(url, method='delete')
 
     """
     Enforcer Host Management
     """
 
     def hosts(self):
+        """
+        Get list of all Enforcers (hosts) on the Aqua Server
+
+        :return: The response format will be a JSON array of enforcer structures. See enforcer structure for description.
+                 https://docs.aquasec.com/reference#section-enforcer-structure
+        """
         url = "{}/hosts".format(self.url_prefix)
+        return self.send_request(url=url, method='get')
+
+    """
+    Containers
+    """
+    def containers(self, node_id: str, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50'):
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
+        url = f"{self.url_prefix}/containers?{query_string}"
         return self.send_request(url=url, method='get')
     
 
@@ -313,6 +380,15 @@ class Aqua():
             host_protection=runtime_options["host_protection"], host_network_protection=runtime_options["host_network_protection"], image_assurance=runtime_options["image_assurance"]))
         return self.send_request(url, method='post', data=data)
 
+    def enforcer_details(self, id: str):
+        """
+         Get Enforcer details
+
+        :param id: host/enforcer id
+        :return:  The return structure is described in Enforcer Structure. https://docs.aquasec.com/reference#section-enforcer-structure
+        """
+        url = "{}/hosts/{}".format(self.url_prefix, id)
+        return self.send_request(url)
 
     """
     Send the API request
@@ -323,7 +399,13 @@ class Aqua():
         try:
             response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
             if response.status_code == 200:
-                return json.loads(response.content.decode('utf-8'))
+                content = response.content.decode('utf-8')
+                if content != '':
+                    content = json.loads(content)
+                else:
+                    content = json.loads('{}')
+
+                return content
             elif response.status_code == 204 or response.status_code == 201:
                 return json.loads('{}')
             else:
@@ -390,3 +472,4 @@ class Aqua():
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
+
