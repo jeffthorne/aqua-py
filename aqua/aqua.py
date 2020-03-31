@@ -54,6 +54,31 @@ class Aqua():
         self.is_super = response_json['user']['is_super']
         self.headers['Authorization'] = f"Bearer {self.token}"
         return 'Authentication successful'
+  
+    #Send the API request
+    """
+    Send the API request
+    """
+    def send_request(self, url, method='get', data=None):
+        request_method = getattr(requests, method)
+
+        try:
+            response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+            if response.status_code == 200:
+                content = response.content.decode('utf-8')
+                if content != '':
+                    content = json.loads(content)
+                else:
+                    content = json.loads('{}')
+
+                return content
+            elif response.status_code == 204 or response.status_code == 201:
+                return json.loads('{}')
+            else:
+                return json.loads(response.content)
+
+        except Exception as e:
+            print(e)
 
     # Consoles
     def consoles(self):
@@ -278,6 +303,7 @@ class Aqua():
         url = f"{self.url_prefix}/applications"
         return self.send_request(url=url)
 
+    #secrets
     """
     Secrets
     """
@@ -330,6 +356,7 @@ class Aqua():
         url = f"{self.url_prefix}/settings/keystores/{name}"
         return self.send_request(url, method='delete')
 
+    #enforcers
     """
     Enforcer Host Management
     """
@@ -390,31 +417,21 @@ class Aqua():
         url = "{}/hosts/{}".format(self.url_prefix, id)
         return self.send_request(url)
 
+    #dashboard
     """
-    Send the API request
+    Dashboard
+
+    param: registry: local name for configured registry
+    param: hosts: filter data by node(s)
+    param: containers_app: this represents a service that is configured
+    :return: A json payload containing the severity information totals for Running Containers, Images and Vulnerabilities as well as Alert and Audit tickers
     """
-    def send_request(self, url, method='get', data=None):
-        request_method = getattr(requests, method)
+    def dashboard(self, registry: str, hosts: str, containers_app: str):
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
+        url = f"{self.url_prefix}/dashboard?{query_string}"
+        return self.send_request(url=url, method='get')
 
-        try:
-            response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-            if response.status_code == 200:
-                content = response.content.decode('utf-8')
-                if content != '':
-                    content = json.loads(content)
-                else:
-                    content = json.loads('{}')
-
-                return content
-            elif response.status_code == 204 or response.status_code == 201:
-                return json.loads('{}')
-            else:
-                return json.loads(response.content)
-
-        except Exception as e:
-            print(e)
-
-
+    #v2 calls
     """
     v2 calls
     """
@@ -485,4 +502,3 @@ class Aqua():
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
-
