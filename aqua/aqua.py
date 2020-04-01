@@ -8,7 +8,7 @@ import urllib3
 class Aqua():
 
     def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '443', api_version: str = 'v1',\
-                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None):
+                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None, remember:bool =  False):
         """
         Currently both v1 and v2 calls are abstracted in this client. You currently do not need to specify API version to
         make v2 calls.
@@ -23,6 +23,7 @@ class Aqua():
             verify_tls: optional. Whether to validate certificate. Set to false for self signed certs.
             cacert_file: optional CA certificates to trust for certificate verification
             proxy: optional http/https proxy dictionary
+            remember: whether to create an extended 30 day session; if false session token will be valid for 9 hours
 
         :return: an Aqua object that represents API endpoint and used for all subsequent calls.
         """
@@ -36,20 +37,23 @@ class Aqua():
         self.proxy = proxy
         self.host = host
         self.port = port
+        self.remember = remember
         self.headers = {'Content-Type': 'application/json', 'api-version': self.api_version}
         self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_tls else '', self.host, self.port, self.api_version)
         self._auth(password)
 
     def _auth(self, password):
         url = "{}/login".format(self.url_prefix)
-        aqua_credentials = json.dumps(dict(id=self.id, password=password))
+        aqua_credentials = json.dumps(dict(id=self.id, password=password, remember=self.remember))
         response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         response_json = json.loads(response.content.decode('utf-8'))
 
         if 'token' in response_json:
             self.token = response_json['token']
         else:
+            print(response_json['message'])
             raise Exception("Authentication Error")
+
         self.role = response_json['user']['role']
         self.is_super = response_json['user']['is_super']
         self.headers['Authorization'] = f"Bearer {self.token}"
