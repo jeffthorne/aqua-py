@@ -421,14 +421,24 @@ class Aqua():
     """
     Dashboard
 
-    param: registry: local name for configured registry
-    param: hosts: filter data by node(s)
-    param: containers_app: this represents a service that is configured
+    :param: registry: local name for configured registry
+    :param: hosts: filter data by node(s)
+    :param: containers_app: this represents a service that is configured
     :return: A json payload containing the severity information totals for Running Containers, Images and Vulnerabilities as well as Alert and Audit tickers
     """
     def dashboard(self, registry: str, hosts: str, containers_app: str):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
         url = f"{self.url_prefix}/dashboard?{query_string}"
+        return self.send_request(url=url, method='get')
+
+    """
+    Trends
+
+    :param: trend: What type of trend to retrieve, options are: containers, images, vulnerabilities
+    :return: A json payload containing the trend numbers based on epoch timestamp
+    """
+    def trends(self, trend: str):
+        url = f"{self.url_prefix}/dashboard/{trend}/trends"
         return self.send_request(url=url, method='get')
 
     #v2 calls
