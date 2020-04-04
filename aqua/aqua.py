@@ -378,7 +378,7 @@ class Aqua():
     """
     Containers
     """
-    def containers(self, node_id: str, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50' ):
+    def containers(self, node_id: str = None, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50' ):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
         url = f"{self.url_prefix}/containers?{query_string}"
         return self.send_request(url=url, method='get')
