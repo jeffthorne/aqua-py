@@ -421,6 +421,11 @@ class Aqua():
         url = "{}/hosts/{}".format(self.url_prefix, id)
         return self.send_request(url)
 
+
+    def list_batch_install_tokens(self):
+        url = f"{self.url_prefix}/hostsbatch"
+        return self.send_request(url)
+
     #dashboard
     """
     Dashboard
