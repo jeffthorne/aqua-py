@@ -423,6 +423,10 @@ class Aqua():
 
 
     def list_batch_install_tokens(self):
+        """
+        List batch install tokens
+        :return:Successful response will include a JSON array of objects. https://docs.aquasec.com/reference#section--list-batch-install-tokens-
+        """
         url = f"{self.url_prefix}/hostsbatch"
         return self.send_request(url)
 
