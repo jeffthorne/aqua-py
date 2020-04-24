@@ -455,27 +455,37 @@ class Aqua():
         return self.send_request(url=url, method='get')
 
 
-    def export_settings(self, settings: List = None):
+    def export_settings(self, settings: List = None, key:str =  None):
         """
         export settings and policies
 
         :param settings: list of string representing settings to export. default is all settings
+        :param key: 32-character key if default key not to be used
         :return: settings dict
         """
-        url = f"{self.url_prefix}/settings/export"
+        if key is None:
+            url = f"{self.url_prefix}/settings/export"
+        else:
+            url = f"{self.url_prefix}/settings/export?encryption_key={key}"
+
         if settings is None:
             settings = ["registries","settings","policy.images_assurance","policy.runtime_profile","policy.user_access_control",\
                         "policy.container_firewall","policy.runtime_policies", "images","labels","secrets","applications"]
         return self.send_request(url=url, method='post', data=json.dumps(settings))
 
-    def import_settings(self, settings: Dict):
+    def import_settings(self, settings: Dict, key: str = None):
         """
         import settings and policies
 
         :param settings: dict representing aqua settings
+        :param key: 32-character key if default key not to be used
         :return: {} if successful
         """
-        url = f"{self.url_prefix}/settings/import"
+        if key is None:
+            url = f"{self.url_prefix}/settings/import"
+        else:
+            url = f"{self.url_prefix}/settings/import?encryption_key={key}"
+
         return self.send_request(url=url, method='post', data=json.dumps(settings))
 
     """
