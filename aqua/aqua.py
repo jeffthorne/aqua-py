@@ -454,7 +454,30 @@ class Aqua():
         url = f"{self.url_prefix}/dashboard/{trend}/trends"
         return self.send_request(url=url, method='get')
 
-    #v2 calls
+
+    def export_settings(self, settings: List = None):
+        """
+        export settings and policies
+
+        :param settings: list of string representing settings to export. default is all settings
+        :return: settings dict
+        """
+        url = f"{self.url_prefix}/settings/export"
+        if settings is None:
+            settings = ["registries","settings","policy.images_assurance","policy.runtime_profile","policy.user_access_control",\
+                        "policy.container_firewall","policy.runtime_policies", "images","labels","secrets","applications"]
+        return self.send_request(url=url, method='post', data=json.dumps(settings))
+
+    def import_settings(self, settings: Dict):
+        """
+        import settings and policies
+
+        :param settings: dict representing aqua settings
+        :return: {} if successful
+        """
+        url = f"{self.url_prefix}/settings/import"
+        return self.send_request(url=url, method='post', data=json.dumps(settings))
+
     """
     v2 calls
     """
