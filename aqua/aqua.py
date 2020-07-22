@@ -558,3 +558,35 @@ class Aqua():
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
+
+    def list_image_assurance(self):
+        """
+        Lists of all image assurance policies in the system
+
+        :return: a list of all assurance policies in a json
+        """
+        url = "{}/assurance_policy".format(self.url_prefix.replace('v1', 'v2'))
+        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))   
+
+    def get_image_assurance(self, policy_name: str):
+        """
+        Return the structure of an image runtime profile
+
+        :param profile_name: name of profile to retrieve
+        :return: the structure of an image runtime profile
+        """
+        url = "{}/assurance_policy/{}".format(self.url_prefix.replace('v1', 'v2'), policy_name)
+        return self.send_request(url)
+
+    def modify_image_assurance(self, policy_name: str, policy_file: str):
+        """
+        Update an existing image assurance policy
+
+        :param policy_name: name of policy to update
+        :param policy_file: json object i.e. returned from list_image_assurance or get_image_assurance
+        :return: A successful creation of the new profile will result in a 204 No Content response.
+        """
+        url = "{}/assurance_policy/{}".format(self.url_prefix, policy_name)
+        response = requests.put(url, data=policy_file, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response
