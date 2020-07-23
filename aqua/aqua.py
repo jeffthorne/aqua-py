@@ -360,6 +360,8 @@ class Aqua():
         url = f"{self.url_prefix}/settings/keystores/{name}"
         return self.send_request(url, method='delete')
 
+
+
     #enforcers
     """
     Enforcer Host Management
@@ -557,4 +559,13 @@ class Aqua():
         :return: notifications as dict
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
+        return self.send_request(url)
+
+
+    def licenses(self):
+        url = "{}/licenses".format(self.url_prefix.replace('v1', 'v2'))
+        return self.send_request(url)
+
+    def license(self, id:str):
+        url = "{}/licenses?id={}".format(self.url_prefix.replace('v1', 'v2'), id)
         return self.send_request(url)
