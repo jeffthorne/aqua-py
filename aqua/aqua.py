@@ -8,7 +8,7 @@ import urllib3
 class Aqua():
 
     def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '443', api_version: str = 'v1',\
-                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None, remember:bool =  False):
+                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None, remember:bool =  False, token: str = None):
         """
         Currently both v1 and v2 calls are abstracted in this client. You currently do not need to specify API version to
         make v2 calls.
@@ -40,7 +40,11 @@ class Aqua():
         self.remember = remember
         self.headers = {'Content-Type': 'application/json', 'api-version': self.api_version}
         self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_tls else '', self.host, self.port, self.api_version)
-        self._auth(password)
+        if token is not None:
+            self.token = token
+            self.headers['Authorization'] = f"Bearer {self.token}"
+        else:
+            self._auth(password)
 
     def _auth(self, password):
         url = "{}/login".format(self.url_prefix)
