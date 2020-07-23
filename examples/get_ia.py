@@ -4,7 +4,7 @@ import json, os
 # 1. Get the list of Image Assurance Policies and save them out by name and type
 
 # Get JWT token from Aqua CSP
-aqua = Aqua(id='administrator', password='ZmVjYmQ5', host='testdrive677.aquasec.com', port='443', using_tls=True)
+aqua = Aqua(id='apiuser', password='thepassword', host='aqua.yourdomain.com', port='443', using_tls=True)
 
 # Expected parameters are registry, hosts, containers_app
 # Sending zero filters to retrieve entire CSP landscape
