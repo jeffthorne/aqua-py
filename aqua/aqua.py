@@ -7,8 +7,10 @@ import urllib3
 
 class Aqua():
 
-    def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '443', api_version: str = 'v1',\
-                 using_tls = True, verify_tls: bool = False, cacert_file: str = None, proxy = None, remember:bool =  False):
+    def __init__(self, id: str = None, password: str = None, host: str = None, port: str = '443',
+                 api_version: str = 'v1', \
+                 using_tls=True, verify_tls: bool = False, cacert_file: str = None, proxy=None, remember: bool = False,
+                 token: str = None):
         """
         Currently both v1 and v2 calls are abstracted in this client. You currently do not need to specify API version to
         make v2 calls.
@@ -39,13 +41,19 @@ class Aqua():
         self.port = port
         self.remember = remember
         self.headers = {'Content-Type': 'application/json', 'api-version': self.api_version}
-        self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_tls else '', self.host, self.port, self.api_version)
-        self._auth(password)
+        self.url_prefix = 'http{}://{}:{}/api/{}'.format('s' if using_tls else '', self.host, self.port,
+                                                         self.api_version)
+        if token is not None:
+            self.token = token
+            self.headers['Authorization'] = f"Bearer {self.token}"
+        else:
+            self._auth(password)
 
     def _auth(self, password):
         url = "{}/login".format(self.url_prefix)
         aqua_credentials = json.dumps(dict(id=self.id, password=password, remember=self.remember))
-        response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        response = requests.post(url, data=aqua_credentials, verify=self.verify_tls, headers=self.headers,
+                                 proxies=self.proxy)
         response_json = json.loads(response.content.decode('utf-8'))
 
         if 'token' in response_json:
@@ -58,16 +66,18 @@ class Aqua():
         self.is_super = response_json['user']['is_super']
         self.headers['Authorization'] = f"Bearer {self.token}"
         return 'Authentication successful'
-  
-    #Send the API request
+
+    # Send the API request
     """
     Send the API request
     """
+
     def send_request(self, url, method='get', data=None):
         request_method = getattr(requests, method)
 
         try:
-            response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+            response = request_method(url=url, data=data, verify=self.verify_tls, headers=self.headers,
+                                      proxies=self.proxy)
             if response.status_code == 200:
                 content = response.content.decode('utf-8')
                 if content != '':
@@ -98,7 +108,6 @@ class Aqua():
         url = "{}/servers".format(self.url_prefix)
         return self.send_request(url)
 
-
     # Infrastructure
     def list_assets(self, page: str = 1, page_size: str = 50, type: str = None):
         """
@@ -109,7 +118,8 @@ class Aqua():
         :param type: node or cluster
         :return: list of nodes and clusters
         """
-        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})  # build query string from parameters that are not None
+        query_string = urlencode({k: v for (k, v) in locals().items() if
+                                  v is not None and k is not 'self'})  # build query string from parameters that are not None
         url = "{}/infrastructure?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
         return self.send_request(url)
 
@@ -128,13 +138,13 @@ class Aqua():
         url = "{}/inventory/scopes".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
 
-
     # Registries
     def list_registries(self):
         url = "{}/registries".format(self.url_prefix)
         return self.send_request(url)
 
-    def create_image_registry(self, reg_type: str, name: str, description: str, username: str, password: str, url: str = None, prefixes: str = None, auto_pull: bool = False):
+    def create_image_registry(self, reg_type: str, name: str, description: str, username: str, password: str,
+                              url: str = None, prefixes: str = None, auto_pull: bool = False):
         """
         Create a new image registry
 
@@ -151,7 +161,9 @@ class Aqua():
                  will immediately begin pulling images from the registry.
         """
         api_url = "{}/registries".format(self.url_prefix)
-        data = json.dumps(dict(type=reg_type, name=name, description=description, username=username, password=password, url=url, prefixes=prefixes, auto_pull=auto_pull))
+        data = json.dumps(
+            dict(type=reg_type, name=name, description=description, username=username, password=password, url=url,
+                 prefixes=prefixes, auto_pull=auto_pull))
         return self.send_request(api_url, method='post', data=data)
 
     def image_registry(self, name: str):
@@ -168,9 +180,7 @@ class Aqua():
         url = "{}/registries/{}".format(self.url_prefix, name)
         return self.send_request(url, method='delete')
 
-
-
-    #Image Profiles
+    # Image Profiles
     def list_profiles(self):
         """
         Lists of all image runtime profiles in the system
@@ -229,8 +239,8 @@ class Aqua():
         :return:  Upon success, this route will return a 204 No Content response.
         """
         url = "{}/registry/{}/repos/{}/policy/{}".format(self.url_prefix, registry_name, repository, policy_name)
-        #response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
-        #return response
+        # response = requests.put(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        # return response
         return self.send_request(url, 'put')
 
     def get_profile(self, profile_name: str):
@@ -255,15 +265,14 @@ class Aqua():
         response = requests.put(url, data=profile, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
 
-
-
-    #image export and import
+    # image export and import
     def export_images(self, images: List[str]):
         url = "{}/images/export".format(self.url_prefix)
-        response = requests.post(url, data=json.dumps(dict(images=images)), verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        response = requests.post(url, data=json.dumps(dict(images=images)), verify=self.verify_tls,
+                                 headers=self.headers, proxies=self.proxy)
         return response.json()
 
-    #scanning images
+    # scanning images
 
     def scan_status(self, registry_name: str, image_name: str, image_tag: str = 'latest') -> Dict:
         """Get status of an image vulnerability scan.
@@ -277,7 +286,8 @@ class Aqua():
         return self.send_request(url)
 
     def scan_results(self, registry_name: str, image_name: str, image_tag: str = 'latest'):
-        url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name, image_tag)
+        url = "{}/scanner/registry/{}/image/{}:{}/scan_result".format(self.url_prefix, registry_name, image_name,
+                                                                      image_tag)
         return self.send_request(url)
 
     def scan_queue(self):
@@ -298,6 +308,7 @@ class Aqua():
     """
     Services
     """
+
     def list_services(self):
         """
         Returns a list of all Aqua services in the system
@@ -307,10 +318,11 @@ class Aqua():
         url = f"{self.url_prefix}/applications"
         return self.send_request(url=url)
 
-    #secrets
+    # secrets
     """
     Secrets
     """
+
     def list_secrets(self):
         url = "{}/secrets".format(self.url_prefix)
         return self.send_request(url)
@@ -322,6 +334,7 @@ class Aqua():
     """
     Secret Key Stores
     """
+
     def list_secret_keystores(self):
         """
         List all existing secret key stores
@@ -332,7 +345,8 @@ class Aqua():
         url = "{}/settings/keystores".format(self.url_prefix)
         return self.send_request(url)
 
-    def create_secret_keystore(self, name: str, url: str, token: str, user: str, type: str = 'vault', enabled: bool = True):
+    def create_secret_keystore(self, name: str, url: str, token: str, user: str, type: str = 'vault',
+                               enabled: bool = True):
         """
         This method expects the request structure described at https://docs.aquasec.com/reference#section-secret-key-store-structure
 
@@ -360,7 +374,7 @@ class Aqua():
         url = f"{self.url_prefix}/settings/keystores/{name}"
         return self.send_request(url, method='delete')
 
-    #enforcers
+    # enforcers
     """
     Enforcer Host Management
     """
@@ -378,20 +392,22 @@ class Aqua():
     """
     Containers
     """
-    def containers(self, node_id: str = None, group_by: str = 'containers', status: str = 'running', page: str = '1', pagesize: str = '50' ):
+
+    def containers(self, node_id: str = None, group_by: str = 'containers', status: str = 'running', page: str = '1',
+                   pagesize: str = '50'):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
         url = f"{self.url_prefix}/containers?{query_string}"
         return self.send_request(url=url, method='get')
 
-
-    def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token, enforcer_image, enforce, gateways, orchestrator, runtime_options):
+    def create_enforcer_group(self, type, id, logicalname, host_os, service_account, namespace, runtime, token,
+                              enforcer_image, enforce, gateways, orchestrator, runtime_options):
         """Create an enforcer group.
 
         :param type: which enforcer (agent, micro-enforcer, nano-enforcer, vm-enforcer)
         :param id: name of the enforcer group
         :param logicalname: prefix for the enforcer names
         :param host_os: Linux or Windows
-        :param service_account: Kubernetes service account 
+        :param service_account: Kubernetes service account
         :param namespace: Namespace Aqua deployed too
         :param runtime: docker, crio, containerd
         :param token: Installation token to identify group
@@ -399,16 +415,27 @@ class Aqua():
         :param enforce: bool - audit = False, enforce = True
         :param gateways: string array of gateways
         :param orchestrator: type of orchestrator (docker, kubernetes, openshift, pas)
-        :param runtime_options: map of policy options 
+        :param runtime_options: map of policy options
         :return: A successful creation of the new enforcer group will result in a json response with the profile
         """
         url = "{}/hostsbatch".format(self.url_prefix)
-        data = json.dumps(dict(id=id, hostname=logicalname, logicalname=logicalname, host_os=host_os, service_account=service_account, namespace=namespace, runtime_type=runtime, \
-            token=token, enforcer_image=enforcer_image, enforce=enforce, gateways=gateways, orchestrator={"type": orchestrator, "service_account": service_account, \
-            "namespace": namespace, "project": namespace}, audit_failed_login=runtime_options["audit_failed_login"], audit_success_login=runtime_options["audit_success_login"], \
-            container_activity_protection=runtime_options["container_activity_protection"], network_protection=runtime_options["network_protection"], sync_host_images=runtime_options["sync_host_images"], \
-            syscall_enabled=runtime_options["syscall_enabled"], user_access_control=runtime_options["user_access_control"], risk_explorer_auto_discovery=runtime_options["risk_explorer_auto_discovery"], \
-            host_protection=runtime_options["host_protection"], host_network_protection=runtime_options["host_network_protection"], image_assurance=runtime_options["image_assurance"]))
+        data = json.dumps(
+            dict(id=id, hostname=logicalname, logicalname=logicalname, host_os=host_os, service_account=service_account,
+                 namespace=namespace, runtime_type=runtime, \
+                 token=token, enforcer_image=enforcer_image, enforce=enforce, gateways=gateways,
+                 orchestrator={"type": orchestrator, "service_account": service_account, \
+                               "namespace": namespace, "project": namespace},
+                 audit_failed_login=runtime_options["audit_failed_login"],
+                 audit_success_login=runtime_options["audit_success_login"], \
+                 container_activity_protection=runtime_options["container_activity_protection"],
+                 network_protection=runtime_options["network_protection"],
+                 sync_host_images=runtime_options["sync_host_images"], \
+                 syscall_enabled=runtime_options["syscall_enabled"],
+                 user_access_control=runtime_options["user_access_control"],
+                 risk_explorer_auto_discovery=runtime_options["risk_explorer_auto_discovery"], \
+                 host_protection=runtime_options["host_protection"],
+                 host_network_protection=runtime_options["host_network_protection"],
+                 image_assurance=runtime_options["image_assurance"]))
         return self.send_request(url, method='post', data=data)
 
     def enforcer_details(self, id: str):
@@ -421,7 +448,6 @@ class Aqua():
         url = "{}/hosts/{}".format(self.url_prefix, id)
         return self.send_request(url)
 
-
     def list_batch_install_tokens(self):
         """
         List batch install tokens
@@ -430,7 +456,7 @@ class Aqua():
         url = f"{self.url_prefix}/hostsbatch"
         return self.send_request(url)
 
-    #dashboard
+    # dashboard
     """
     Dashboard
 
@@ -439,6 +465,7 @@ class Aqua():
     :param: containers_app: this represents a service that is configured
     :return: A json payload containing the severity information totals for Running Containers, Images and Vulnerabilities as well as Alert and Audit tickers
     """
+
     def dashboard(self, registry: str, hosts: str, containers_app: str):
         query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k is not 'self'})
         url = f"{self.url_prefix}/dashboard?{query_string}"
@@ -450,12 +477,12 @@ class Aqua():
     :param: trend: What type of trend to retrieve, options are: containers, images, vulnerabilities
     :return: A json payload containing the trend numbers based on epoch timestamp
     """
+
     def trends(self, trend: str):
         url = f"{self.url_prefix}/dashboard/{trend}/trends"
         return self.send_request(url=url, method='get')
 
-
-    def export_settings(self, settings: List = None, key:str =  None):
+    def export_settings(self, settings: List = None, key: str = None):
         """
         export settings and policies
 
@@ -469,8 +496,10 @@ class Aqua():
             url = f"{self.url_prefix}/settings/export?encryption_key={key}"
 
         if settings is None:
-            settings = ["registries","settings","policy.images_assurance","policy.runtime_profile","policy.user_access_control",\
-                        "policy.container_firewall","policy.runtime_policies", "images","labels","secrets","applications"]
+            settings = ["registries", "settings", "policy.images_assurance", "policy.runtime_profile",
+                        "policy.user_access_control", \
+                        "policy.container_firewall", "policy.runtime_policies", "images", "labels", "secrets",
+                        "applications"]
         return self.send_request(url=url, method='post', data=json.dumps(settings))
 
     def import_settings(self, settings: Dict, key: str = None):
@@ -495,21 +524,24 @@ class Aqua():
     """
     v2 Images
     """
+
     def register_image(self, registry, image_name, image_tag: str = 'latest'):
         url = "{}/images".format(self.url_prefix.replace('v1', 'v2'))
         data = json.dumps(dict(registry=registry, image=f'{image_name}:{image_tag}'))
-        #resp = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        # resp = requests.post(url, data=data, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return self.send_request(url=url, method='post', data=data)
 
-    def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None, page_size: int = None, order_by: str = None):
-        query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
+    def list_registered_images(self, registry: str = None, repository: str = None, name: str = None, page: int = None,
+                               page_size: int = None, order_by: str = None):
+        query_string = urlencode({k: v for (k, v) in locals().items() if
+                                  v is not None and k is not 'self'})  # build query string from parameters that are not None
         url = "{}/images?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
 
-
     def get_registered_images(self, registry: str = None, repository: str = None, name: str = None):
-        query_string = urlencode({k:v for (k,v) in locals().items() if v is not None and k is not 'self'})   #build query string from parameters that are not None
+        query_string = urlencode({k: v for (k, v) in locals().items() if
+                                  v is not None and k is not 'self'})  # build query string from parameters that are not None
         url = "{}/images?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
@@ -519,10 +551,13 @@ class Aqua():
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
 
-    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0, pagesize: int = 50,
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0,
+                                   pagesize: int = 50,
                                    show_negligible: bool = True, hide_base_image: bool = False):
-        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
-        url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name, image_tag, query_string)
+        query_string = urlencode(
+            {k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name,
+                                                             image_tag, query_string)
         return self.send_request(url)
 
     def list_image_malware(self, registry: str, repo: str, tag: str = "latest"):
@@ -547,7 +582,8 @@ class Aqua():
         :param order_by: date (ASC) or -date (DESC)
         :return: scan history object
         """
-        url = "{}/images/{}/{}/{}/scan_history?order_by={}".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag, order_by)
+        url = "{}/images/{}/{}/{}/scan_history?order_by={}".format(self.url_prefix.replace('v1', 'v2'), registry, repo,
+                                                                   tag, order_by)
         return self.send_request(url)
 
     def notifications(self):
@@ -558,6 +594,7 @@ class Aqua():
         """
         url = "{}/notifications".format(self.url_prefix.replace('v1', 'v2'))
         return self.send_request(url)
+
 
     def list_image_assurance(self):
         """
@@ -590,3 +627,4 @@ class Aqua():
         url = "{}/assurance_policy/{}".format(self.url_prefix, policy_name)
         response = requests.put(url, data=policy_file, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
+
