@@ -614,25 +614,65 @@ class Aqua():
         response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return json.loads(response.content.decode('utf-8'))   
 
-    def get_image_assurance(self, policy_name: str):
+    def get_image_assurance(self, policy_name: str, policy_type: str):
         """
         Return the structure of an image runtime profile
 
         :param profile_name: name of profile to retrieve
+        :param policy_type: the type of assurance policy (image | host | function | cf_application)
         :return: the structure of an image runtime profile
-        """
-        url = "{}/assurance_policy/{}".format(self.url_prefix.replace('v1', 'v2'), policy_name)
-        return self.send_request(url)
 
-    def modify_image_assurance(self, policy_name: str, policy_file: str):
+        NOTE: 
+        """
+        url = "{}/assurance_policy/{}/{}".format(self.url_prefix.replace('v1', 'v2'),policy_type, policy_name)
+        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))   
+
+    def modify_image_assurance(self, policy_name: str, policy_file: str, policy_type: str):
         """
         Update an existing image assurance policy
 
         :param policy_name: name of policy to update
         :param policy_file: json object i.e. returned from list_image_assurance or get_image_assurance
+        :param policy_type: the type of assurance policy (image | host | function | cf_application)
         :return: A successful creation of the new profile will result in a 204 No Content response.
         """
-        url = "{}/assurance_policy/{}".format(self.url_prefix, policy_name)
+        url = "{}/assurance_policy/{}/{}".format(self.url_prefix.replace('v1', 'v2'),policy_type, policy_name)
+        response = requests.put(url, data=str(policy_file), verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return response
+
+######################################################################
+#  the retrieval and modification of runtime policies
+######################################################################
+    def list_runtime_policies(self):
+        """
+        Lists of all runtime policies in the system
+
+        :return: a list of all runtime policies in a json
+        """
+        url = "{}/runtime_policies".format(self.url_prefix.replace('v1', 'v2'))
+        response = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
+        return json.loads(response.content.decode('utf-8'))   
+
+    def get_runtime_policies(self, policy_name: str):
+        """
+        Return the structure of a runtime policy
+
+        :param profile_name: name of policy to retrieve
+        :return: the structure of a runtime policy
+        """
+        url = "{}/runtime_policies/{}".format(self.url_prefix.replace('v1', 'v2'), policy_name)
+        return self.send_request(url)
+
+    def modify_runtime_policies(self, policy_name: str, policy_file: str):
+        """
+        Update an existing image assurance policy
+
+        :param policy_name: name of policy to update
+        :param policy_file: json object i.e. returned from list_runtime_policies or get_runtime_policies
+        :return: A successful creation of the new policy will result in a 204 No Content response.
+        """
+        url = "{}/runtime_policies/{}".format(self.url_prefix.replace('v1', 'v2'), policy_name)
         response = requests.put(url, data=policy_file, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return response
 

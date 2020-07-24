@@ -8,18 +8,18 @@ aqua = Aqua(id='apiuser', password='apiuserpassword', host='aqua.yourdomain.com'
 
 # Expected parameters are registry, hosts, containers_app
 # Sending zero filters to retrieve entire CSP landscape
-ia_policies = aqua.list_image_assurance()
+rp_policies = aqua.list_runtime_policies()
 # Print the total running containers and containers running with at least one critical vulnerability
-print("Total IA policies: " + str(ia_policies['count']))
+print("Total Runtime policies: " + str(rp_policies['count']))
 
-print(ia_policies)
-if not os.path.exists("ia"):
-    os.makedirs("ia")
+print(rp_policies)
+if not os.path.exists("rp"):
+    os.makedirs("rp")
 
-for p in ia_policies["result"]:
-    if not os.path.exists("ia/" + p["assurance_type"]):
-        os.makedirs("ia/" + p["assurance_type"])
-    with open("ia/" + p["assurance_type"] + "/" + p["name"], 'w') as f:
+for p in rp_policies["result"]:
+    if not os.path.exists("rp/" + p["runtime_type"]):
+        os.makedirs("rp/" + p["runtime_type"])
+    with open("rp/" + p["runtime_type"] + "/" + p["name"], 'w') as f:
         json.dump(p,f)
 
 
