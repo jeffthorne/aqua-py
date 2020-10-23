@@ -11,7 +11,7 @@ Welcome to Aqua-py
 A fantastic Python 3 client for Aqua's Container Security Platform.
 
 | This project is an early stage effort and has a status of experimental.
-| Questions, Comments, Feedback, Missing Calls, etc. Drop me a line @ jeff.thorne@aquasec.com
+| Questions, Comments, Feedback, Missing Calls, etc. Drop me a line @ jthorne@u.washington.edu
 
 
 Installation
@@ -44,8 +44,8 @@ Example Usage
 --------------
 Please refer to the Endpoint api doc at :doc:`aqua.aqua` for current sdk api endpoint capabilities.
 
-1. Authentication: `GithHub <https://github.com/aquasecurity/aqua-py/blob/master/examples/authentication.py/>`_.
-2. Image Assurance: `GitHub <https://github.com/aquasecurity/aqua-py/blob/master/examples/image_assurance.py/>`_.
+1. Authentication: `GithHub <https://github.com/jeffthorne/aqua-py/blob/master/examples/authentication.py/>`_.
+2. Image Assurance: `GitHub <https://github.com/jeffthorne/aqua-py/blob/master/examples/image_assurance.py/>`_.
 
 |
 |
@@ -56,7 +56,7 @@ Use Cases
 Example use cases from the field.
 
 1. Image profiling build task: `GitHub <https://github.com/jeffthorne/aqua_examples>`_
-2. Create Enforcer Group: `GitHub <https://github.com/aquasecurity/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
+2. Create Enforcer Group: `GitHub <https://github.com/jeffthorne/aqua-py/blob/master/examples/create_enforcer_group.py/>`_.
 3. k8s Admission controller: `GitHub <https://github.com/jeffthorne/rancher-admission-webhook>`_
 4. Custom Excel Report: `GitHub <https://github.com/jeffthorne/aqua-reports>`_
 5. Full image details: `GitHub <https://github.com/jeffthorne/datarequirements>`_
