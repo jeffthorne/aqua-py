@@ -109,7 +109,7 @@ class Aqua():
         return self.send_request(url)
 
     # Infrastructure
-    def list_assets(self, page: str = 1, page_size: str = 50, type: str = None):
+    def list_assets(self, page: str = 1, page_size: str = 50, type: str = None, search: str = None):
         """
         Retrieve details of hosts and clusters configured in system.
 
@@ -551,14 +551,27 @@ class Aqua():
         resp = requests.get(url, verify=self.verify_tls, headers=self.headers, proxies=self.proxy)
         return resp.json()
 
-    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0,
-                                   pagesize: int = 50,
+    def list_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0, pagesize: int = 50,
                                    show_negligible: bool = True, hide_base_image: bool = False):
-        query_string = urlencode(
-            {k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
         url = "{}/images/{}/{}/{}/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), registry, image_name,
                                                              image_tag, query_string)
         return self.send_request(url)
+
+    def risks_image_vulnerabilities(self, registry, image_name, image_tag: str = 'latest', page: int = 0, pagesize: int = 50,
+                                   include_vpatch_info: str = 'true',show_negligible: str = 'true', hide_base_image: str = 'false'):
+        image_name = f"{image_name}:{image_tag}"
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        url = "{}/risks/vulnerabilities?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
+        return self.send_request(url)
+
+    def heuristics(self, registry: str, image_name:str, image_tag: str, cve: str, resource_name: str, resource_type: str):
+        full_image_name = f"{image_name}:{image_tag}"
+        locals()['repo_name'] = image_name
+        image_name = f"{image_name}:{image_tag}"
+        query_string = urlencode({k: v for (k, v) in locals().items() if v is not None and k not in ['self', 'image_tag']})
+        url = "{}/heuristics?{}".format(self.url_prefix.replace('v1', 'v2'), query_string)
+
 
     def list_image_malware(self, registry: str, repo: str, tag: str = "latest"):
         url = "{}/images/{}/{}/{}/malware".format(self.url_prefix.replace('v1', 'v2'), registry, repo, tag)
