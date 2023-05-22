@@ -8,6 +8,6 @@ setup(name='aqua',
       author_email='jthorne@u.washington.edu',
       license='MIT',
       packages=['aqua'],
-      install_requires=['requests == 2.22.0'],
+      install_requires=['requests == 2.31.0'],
       zip_safe=False,)
 
